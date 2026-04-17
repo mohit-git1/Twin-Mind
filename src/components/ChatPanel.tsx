@@ -1,3 +1,5 @@
+'use client';
+
 import { useAppStore } from '@/store/useAppStore';
 import { Send } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
