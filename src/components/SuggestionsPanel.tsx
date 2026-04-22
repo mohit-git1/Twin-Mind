@@ -94,49 +94,49 @@ export function SuggestionsPanel() {
   return (
     <div className="flex flex-col h-full w-full relative">
       {/* Header */}
-      <div className="flex-none flex items-center justify-between p-4 border-b border-[#27272a] bg-[#1c1c1f]">
-        <h2 className="text-xs font-semibold tracking-widest text-[#a1a1aa] uppercase">2. Live Suggestions</h2>
-        <span className="text-xs text-[#71717a] uppercase tracking-widest">{suggestions.length} Batches</span>
+      <div className="flex-none flex items-center justify-between px-5 py-4 border-b border-[#27272a]">
+        <h2 className="text-sm font-semibold tracking-wide text-slate-200">Live Suggestions</h2>
+        <span className="text-xs text-[#71717a] font-medium">{suggestions.length} batches</span>
       </div>
 
-      <div className="flex items-center justify-between p-4 pb-2 flex-none">
+      {/* Controls */}
+      <div className="flex items-center justify-between px-5 py-3 flex-none">
         <button
           onClick={fetchSuggestions}
           disabled={isLoading || transcript.length === 0}
-          className="flex items-center px-4 py-2 text-xs text-[#a1a1aa] border border-[#3f3f46] rounded-md hover:bg-[#27272a] transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-sm text-[#a1a1aa] border border-[#3f3f46] rounded-lg hover:bg-[#27272a] transition-colors disabled:opacity-40"
         >
-          {isLoading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <RotateCw className="w-3 h-3 mr-2" />}
-          Reload suggestions
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCw className="w-4 h-4" />}
+          Refresh
         </button>
-        <span className="text-[10px] text-[#71717a]">auto-refresh in {settings.autoRefreshInterval}s</span>
       </div>
 
       {/* Scrollable Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar" ref={scrollRef}>
+      <div className="flex-1 overflow-y-auto px-5 py-3 space-y-5 custom-scrollbar" ref={scrollRef}>
         {isLoading && suggestions.length === 0 && (
-           <div className="p-4 border border-[#3f3f46] rounded-lg bg-[#161618] animate-pulse">
-             <div className="h-4 bg-[#27272a] rounded w-1/3 mb-2"></div>
+           <div className="p-5 border border-[#3f3f46] rounded-lg bg-[#161618] animate-pulse">
+             <div className="h-4 bg-[#27272a] rounded w-1/3 mb-3"></div>
              <div className="h-3 bg-[#27272a] rounded w-2/3"></div>
            </div>
         )}
         
         {suggestions.length === 0 && !isLoading ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-[#71717a] italic text-sm text-center">Waiting for context...</p>
+            <p className="text-[#52525b] italic text-base text-center">Waiting for context...</p>
           </div>
         ) : (
           suggestions.map((batch, index) => (
-            <div key={batch.id} className="space-y-3 animate-in fade-in duration-500">
+            <div key={batch.id} className="space-y-3">
               <div className="grid gap-3">
                 {batch.items.map((item) => (
                   <SuggestionCard key={item.id} item={item} onClick={handleSuggestionClick} />
                 ))}
               </div>
               {index !== suggestions.length - 1 && (
-                <div className="flex items-center justify-center pt-2">
-                   <div className="h-px bg-[#27272a] w-8"></div>
-                   <span className="mx-4 text-[9px] text-[#71717a] uppercase tracking-widest">Older</span>
-                   <div className="h-px bg-[#27272a] w-8"></div>
+                <div className="flex items-center justify-center py-2">
+                   <div className="h-px bg-[#27272a] w-10"></div>
+                   <span className="mx-4 text-[10px] text-[#52525b] uppercase tracking-widest">Older</span>
+                   <div className="h-px bg-[#27272a] w-10"></div>
                 </div>
               )}
             </div>

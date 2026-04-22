@@ -7,26 +7,26 @@ import { SettingsModal } from '@/components/SettingsModal';
 
 export default function Home() {
   return (
-    <main className="flex flex-col h-screen w-full overflow-hidden bg-[#0f1115] font-sans text-slate-300">
-      {/* Top Header */}
-      <header className="flex-none flex items-center justify-end px-6 py-3 border-b border-[#27272a] bg-[#1c1c1f]">
-         <SettingsModal />
-      </header>
+    <main className="flex flex-col h-screen w-full overflow-hidden bg-[#0f1115] font-sans text-slate-200">
+      {/* Gear icon — top right corner */}
+      <div className="absolute top-3 right-4 z-40">
+        <SettingsModal />
+      </div>
 
-      {/* Columns Container */}
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 max-w-[1800px] w-full mx-auto">
+      {/* Full-width 3-column layout */}
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
         {/* Left Column - Transcript */}
-        <section className="flex-1 flex flex-col min-w-0 rounded-xl border border-[#27272a] bg-[#1c1c1f] overflow-hidden">
+        <section className="flex-1 flex flex-col min-w-0 border-r border-[#27272a] bg-[#1c1c1f] overflow-hidden">
           <TranscriptPanel />
         </section>
 
         {/* Middle Column - Suggestions */}
-        <section className="flex-1 flex flex-col min-w-0 rounded-xl border border-[#27272a] bg-[#1c1c1f] overflow-hidden">
+        <section className="flex-1 flex flex-col min-w-0 border-r border-[#27272a] bg-[#1c1c1f] overflow-hidden">
           <SuggestionsPanel />
         </section>
 
         {/* Right Column - Chat */}
-        <section className="flex-1 flex flex-col min-w-0 rounded-xl border border-[#27272a] bg-[#1c1c1f] overflow-hidden">
+        <section className="flex-1 flex flex-col min-w-0 bg-[#1c1c1f] overflow-hidden">
           <ChatPanel />
         </section>
       </div>

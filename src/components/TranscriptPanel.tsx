@@ -19,46 +19,50 @@ export function TranscriptPanel() {
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header */}
-      <div className="flex-none flex items-center justify-between p-4 border-b border-[#27272a]">
-        <h2 className="text-xs font-semibold tracking-widest text-[#a1a1aa] uppercase">1. Mic & Transcript</h2>
-        <div className="flex items-center space-x-3">
-          <span className="text-xs text-[#71717a] uppercase tracking-widest">
-            {isRecording ? 'Recording' : 'Idle'}
+      <div className="flex-none flex items-center justify-between px-5 py-4 border-b border-[#27272a]">
+        <h2 className="text-sm font-semibold tracking-wide text-slate-200">Transcript</h2>
+        <div className="flex items-center gap-3">
+          <span className={`text-xs font-medium tracking-wide ${isRecording ? 'text-red-400' : 'text-[#71717a]'}`}>
+            {isRecording ? '● REC' : 'IDLE'}
           </span>
         </div>
       </div>
 
-      {/* Control Bar */}
-      <div className="flex-none p-4 pb-0 flex items-center">
+      {/* Mic Control */}
+      <div className="flex-none px-5 py-3 flex items-center gap-4">
         <button
           onClick={isRecording ? stopRecording : startRecording}
           title={isRecording ? "Stop Recording" : "Start Recording"}
-          className="flex items-center justify-center w-10 h-10 rounded-full border border-[#3f3f46] hover:bg-[#27272a] transition-colors"
+          className={`flex items-center justify-center w-11 h-11 rounded-full border transition-all duration-200 ${
+            isRecording
+              ? 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20'
+              : 'border-[#3f3f46] hover:bg-[#27272a]'
+          }`}
         >
           {isRecording ? (
-            <span className="w-3 h-3 bg-red-500 rounded-sm" />
+            <span className="w-3.5 h-3.5 bg-red-500 rounded-sm" />
           ) : (
-            <span className="w-3 h-3 bg-[#60a5fa] rounded-full" />
+            <span className="w-3.5 h-3.5 bg-[#60a5fa] rounded-full" />
           )}
         </button>
-        <span className="ml-4 text-xs text-[#71717a]">
-          {isRecording ? "Recording active. Speak to transcribe." : "Stopped. Click to resume."}
+        <span className="text-sm text-[#a1a1aa]">
+          {isRecording ? "Listening... speak to transcribe." : "Click to start recording."}
         </span>
       </div>
 
       {/* Transcript Scrollable Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3 custom-scrollbar">
         {transcript.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-[#71717a] italic text-sm text-center">
+            <p className="text-[#52525b] italic text-base text-center">
               Transcript will appear here...
             </p>
           </div>
         ) : (
           transcript.map((line, index) => (
-            <div key={index} className="text-slate-300 leading-relaxed text-sm">
-              <span className="text-[#71717a] mr-2 font-mono text-[10px]">
-                [{String(index + 1).padStart(3, '0')}]
+            <div key={index} className="text-slate-200 leading-relaxed text-base">
+              <span className="text-[#52525b] mr-3 font-mono text-xs">
+                {String(index + 1).padStart(2, '0')}
               </span>
               {line}
             </div>
@@ -66,9 +70,9 @@ export function TranscriptPanel() {
         )}
         
         {isTranscribing && (
-          <div className="flex items-center space-x-2 text-[#71717a] mt-4 p-2">
-            <Loader2 className="w-3 h-3 animate-spin text-[#a1a1aa]" />
-            <span className="text-xs font-medium italic">Processing...</span>
+          <div className="flex items-center gap-2 text-[#a1a1aa] py-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm font-medium italic">Processing...</span>
           </div>
         )}
         <div ref={scrollRef} className="h-4 w-full" />

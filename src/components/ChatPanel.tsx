@@ -1,7 +1,6 @@
 'use client';
 
 import { useAppStore } from '@/store/useAppStore';
-import { Send } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 export function ChatPanel() {
@@ -30,25 +29,29 @@ export function ChatPanel() {
   return (
     <div className="flex flex-col h-full w-full relative">
       {/* Header */}
-      <div className="flex-none flex items-center justify-between p-4 border-b border-[#27272a] bg-[#1c1c1f]">
-        <h2 className="text-xs font-semibold tracking-widest text-[#a1a1aa] uppercase">3. Chat (Detailed Answers)</h2>
-        <span className="text-xs text-[#71717a] uppercase tracking-widest">Session-Only</span>
+      <div className="flex-none flex items-center justify-between px-5 py-4 border-b border-[#27272a]">
+        <h2 className="text-sm font-semibold tracking-wide text-slate-200">Chat</h2>
+        <span className="text-xs text-[#71717a] font-medium">Session Only</span>
       </div>
 
       {/* Scrollable Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 custom-scrollbar">
         {chatMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-             <p className="text-[#71717a] italic text-sm text-center">Select a suggestion or type a message...</p>
+             <p className="text-[#52525b] italic text-base text-center">Select a suggestion or type a message...</p>
           </div>
         ) : (
           chatMessages.map((msg) => (
-            <div key={msg.id} className="flex flex-col space-y-2 animate-in fade-in duration-300">
-               <span className="text-[10px] text-[#71717a] uppercase tracking-widest font-medium">
+            <div key={msg.id} className="flex flex-col gap-2">
+               <span className="text-xs text-[#71717a] uppercase tracking-widest font-semibold">
                  {msg.sender === 'user' ? 'YOU' : 'ASSISTANT'}
                </span>
-               <div className="bg-[#161618] border border-[#3f3f46] rounded-md p-4">
-                  <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+               <div className={`rounded-lg p-4 ${
+                 msg.sender === 'user' 
+                   ? 'bg-[#1e293b] border border-[#334155]' 
+                   : 'bg-[#161618] border border-[#3f3f46]'
+               }`}>
+                  <p className="text-base text-slate-200 leading-relaxed whitespace-pre-wrap">
                      {typeof msg.text === 'string' ? msg.text : JSON.stringify(msg.text, null, 2)}
                   </p>
                </div>
@@ -56,38 +59,38 @@ export function ChatPanel() {
           ))
         )}
 
-        {/* Loading / Thinking Logic */}
+        {/* Thinking indicator */}
         {isChatThinking && (
-          <div className="flex flex-col space-y-2 mt-4 ml-2 mb-4">
-             <span className="text-[10px] text-[#71717a] uppercase tracking-widest font-medium">ASSISTANT</span>
-             <div className="bg-[#161618] border border-[#3f3f46] border-dashed rounded-md p-4 flex items-center space-x-3 w-max">
-               <span className="flex space-x-1 border border-[#3f3f46] rounded-full px-2 py-1 bg-[#1c1c1f]">
-                 <span className="animate-bounce inline-block w-1.5 h-1.5 bg-[#71717a] rounded-full" style={{ animationDelay: '0ms' }} />
-                 <span className="animate-bounce inline-block w-1.5 h-1.5 bg-[#71717a] rounded-full" style={{ animationDelay: '150ms' }} />
-                 <span className="animate-bounce inline-block w-1.5 h-1.5 bg-[#71717a] rounded-full" style={{ animationDelay: '300ms' }} />
+          <div className="flex flex-col gap-2">
+             <span className="text-xs text-[#71717a] uppercase tracking-widest font-semibold">ASSISTANT</span>
+             <div className="bg-[#161618] border border-[#3f3f46] border-dashed rounded-lg p-4 flex items-center gap-3 w-max">
+               <span className="flex gap-1">
+                 <span className="animate-bounce inline-block w-2 h-2 bg-[#71717a] rounded-full" style={{ animationDelay: '0ms' }} />
+                 <span className="animate-bounce inline-block w-2 h-2 bg-[#71717a] rounded-full" style={{ animationDelay: '150ms' }} />
+                 <span className="animate-bounce inline-block w-2 h-2 bg-[#71717a] rounded-full" style={{ animationDelay: '300ms' }} />
                </span>
-               <span className="text-sm text-[#a1a1aa] font-medium tracking-wide">Synthesizing deep context...</span>
+               <span className="text-sm text-[#a1a1aa] font-medium">Thinking...</span>
              </div>
           </div>
         )}
         <div ref={scrollRef} className="h-4 w-full" />
       </div>
 
-      {/* Input Box Fixed at Bottom */}
-      <div className="flex-none p-4 border-t border-[#27272a] bg-[#1c1c1f]">
-        <form onSubmit={handleSend} className="flex items-center space-x-2">
+      {/* Input Box */}
+      <div className="flex-none px-5 py-4 border-t border-[#27272a]">
+        <form onSubmit={handleSend} className="flex items-center gap-3">
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             disabled={isChatThinking}
             placeholder="Ask anything..."
-            className="flex-1 bg-[#161618] text-slate-200 border border-[#3f3f46] rounded-md px-4 py-2.5 text-sm focus:outline-none focus:border-[#71717a] transition-colors placeholder-[#71717a] disabled:opacity-50"
+            className="flex-1 bg-[#161618] text-slate-200 border border-[#3f3f46] rounded-lg px-4 py-3 text-base focus:outline-none focus:border-[#60a5fa] transition-colors placeholder-[#52525b] disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={!inputValue.trim() || isChatThinking}
-            className="bg-[#60a5fa] hover:bg-[#3b82f6] text-slate-900 px-5 py-2.5 rounded-md text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center shadow-lg"
+            className="bg-[#60a5fa] hover:bg-[#3b82f6] text-slate-900 px-6 py-3 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 shadow-lg"
           >
             Send
           </button>

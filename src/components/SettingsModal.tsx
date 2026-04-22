@@ -65,14 +65,13 @@ export function SettingsModal() {
 
   return (
     <>
-      {/* Settings Trigger Button */}
+      {/* Settings Trigger — Gear Icon Only */}
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 text-xs text-[#a1a1aa] border border-[#3f3f46] rounded-md hover:bg-[#27272a] hover:text-slate-200 transition-all duration-200"
+        className="p-2 text-[#71717a] hover:text-slate-200 hover:bg-[#27272a] rounded-lg transition-all duration-200"
         title="Settings"
       >
-        <Settings className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">Settings</span>
+        <Settings className="w-5 h-5" />
       </button>
 
       {/* Modal Overlay */}

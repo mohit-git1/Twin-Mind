@@ -18,14 +18,14 @@ export function SuggestionCard({ item, onClick }: SuggestionCardProps) {
   return (
     <div 
       onClick={() => onClick && onClick(item)}
-      className="group flex flex-col gap-2 rounded-lg border border-[#3f3f46] bg-[#161618] p-4 cursor-pointer hover:border-[#71717a] transition-all"
+      className="group flex flex-col gap-2.5 rounded-lg border border-[#3f3f46] bg-[#161618] p-5 cursor-pointer hover:border-[#71717a] hover:bg-[#1a1a1d] transition-all duration-200"
     >
       <div className="flex items-center">
-        <span className={cn("text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded border", typeStyles[item.type] || typeStyles.answer)}>
+        <span className={cn("text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded border", typeStyles[item.type] || typeStyles.answer)}>
           {item.type.replace('_', ' ')}
         </span>
       </div>
-      <p className="text-sm font-medium text-slate-200 leading-relaxed group-hover:text-white transition-colors">
+      <p className="text-base font-medium text-slate-200 leading-relaxed group-hover:text-white transition-colors">
         {item.preview}
       </p>
     </div>
