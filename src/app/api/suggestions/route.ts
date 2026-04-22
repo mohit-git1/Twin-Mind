@@ -10,6 +10,14 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const transcript: string[] = body.transcript || [];
+    const settings = body.settings || {};
+
+    // Use settings from client or defaults
+    const contextLines = settings.suggestionsContextLines || 12;
+    const suggestionCount = settings.suggestionCount || 3;
+    const model = settings.model || 'llama-3.3-70b-versatile';
+    const temperature = settings.temperature ?? 0.7;
+    const maxTokens = settings.maxTokens || 1024;
 
     if (!transcript || transcript.length === 0) {
       return NextResponse.json(
@@ -18,14 +26,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    function getRecentContext(transcriptArr: string[]) {
-      return transcriptArr
-        .slice(-12)
-        .map(t => t.replace(/\b(um|uh|okay|like|you know)\b/gi, "").replace(/\s+/g, ' ').trim())
-        .filter(Boolean);
-    }
-
-    const recentLines = getRecentContext(transcript);
+    const recentLines = transcript
+      .slice(-contextLines)
+      .map(t => t.replace(/\b(um|uh|okay|like|you know)\b/gi, "").replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
 
     if (recentLines.length === 0) {
        return NextResponse.json({ suggestions: [] });
@@ -33,14 +37,21 @@ export async function POST(req: NextRequest) {
 
     const conversationContext = recentLines.join('\n');
 
-    const prompt = `You are a high-quality, real-time AI meeting assistant.
+    // Build prompt from settings or use default
+    let prompt: string;
+    if (settings.suggestionsPrompt) {
+      prompt = settings.suggestionsPrompt
+        .replace(/\{\{CONTEXT\}\}/g, conversationContext)
+        .replace(/\{\{SUGGESTION_COUNT\}\}/g, String(suggestionCount));
+    } else {
+      prompt = `You are a high-quality, real-time AI meeting assistant.
 Your goal is to generate useful, in-the-moment suggestions based on the live conversation transcript.
 
 Input (Recent Transcript):
 ${conversationContext}
 
 Output Requirements:
-Return exactly 3 suggestions.
+Return exactly ${suggestionCount} suggestions.
 Each suggestion must:
 - Be immediately useful and actionable
 - Be concise
@@ -75,13 +86,14 @@ You MUST return STRICT JSON ONLY under the exact schema below. Do not include ma
     }
   ]
 }`;
+    }
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.3-70b-versatile',
+      model,
       response_format: { type: 'json_object' },
-      temperature: 0.7,
-      max_tokens: 1024,
+      temperature,
+      max_tokens: maxTokens,
     });
 
     const content = chatCompletion.choices[0]?.message?.content;

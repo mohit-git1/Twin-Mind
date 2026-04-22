@@ -1,14 +1,16 @@
+'use client';
+
 import { TranscriptPanel } from '@/components/TranscriptPanel';
 import { SuggestionsPanel } from '@/components/SuggestionsPanel';
 import { ChatPanel } from '@/components/ChatPanel';
+import { SettingsModal } from '@/components/SettingsModal';
 
 export default function Home() {
   return (
     <main className="flex flex-col h-screen w-full overflow-hidden bg-[#0f1115] font-sans text-slate-300">
       {/* Top Header */}
-      <header className="flex-none flex items-center justify-between px-6 py-4 border-b border-[#27272a] bg-[#1c1c1f]">
-         <h1 className="text-sm font-semibold text-slate-200">TwinMind — Live Suggestions Web App (Reference Mockup)</h1>
-         <div className="text-xs text-slate-500 hidden sm:block">3-column layout • Transcript • Live Suggestions • Chat</div>
+      <header className="flex-none flex items-center justify-end px-6 py-3 border-b border-[#27272a] bg-[#1c1c1f]">
+         <SettingsModal />
       </header>
 
       {/* Columns Container */}

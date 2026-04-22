@@ -58,7 +58,7 @@ export function TranscriptPanel() {
           transcript.map((line, index) => (
             <div key={index} className="text-slate-300 leading-relaxed text-sm">
               <span className="text-[#71717a] mr-2 font-mono text-[10px]">
-                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                [{String(index + 1).padStart(3, '0')}]
               </span>
               {line}
             </div>

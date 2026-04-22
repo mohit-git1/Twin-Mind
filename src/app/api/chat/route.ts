@@ -10,6 +10,13 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { transcript, full_prompt } = body;
+    const settings = body.settings || {};
+
+    // Use settings from client or defaults
+    const contextLines = settings.chatContextLines || 15;
+    const model = settings.model || 'llama-3.3-70b-versatile';
+    const temperature = settings.temperature ?? 0.7;
+    const maxTokens = settings.maxTokens || 1024;
 
     if (!full_prompt) {
       return NextResponse.json(
@@ -22,13 +29,20 @@ export async function POST(req: NextRequest) {
     
     // Process context cleanly 
     const recentLines = transcriptArray
-      .slice(-15)
+      .slice(-contextLines)
       .map(cleanText)
       .filter(Boolean);
 
     const conversationContext = recentLines.join('\n');
 
-    const prompt = `You are a high-quality AI meeting assistant actively participating in an ongoing conversation.
+    // Build prompt from settings or use default
+    let prompt: string;
+    if (settings.chatPrompt) {
+      prompt = settings.chatPrompt
+        .replace(/\{\{CONTEXT\}\}/g, conversationContext)
+        .replace(/\{\{FULL_PROMPT\}\}/g, full_prompt);
+    } else {
+      prompt = `You are a high-quality AI meeting assistant actively participating in an ongoing conversation.
 The user has clicked a specific suggestion prompt based on the live context.
 
 System Goal: 
@@ -52,13 +66,14 @@ Return STRICT JSON ONLY conforming exactly to this shape (do not include markdow
 {
   "answer": "<your detailed and structured output response>"
 }`;
+    }
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.3-70b-versatile',
+      model,
       response_format: { type: 'json_object' },
-      temperature: 0.7,
-      max_tokens: 1024,
+      temperature,
+      max_tokens: maxTokens,
     });
 
     const content = chatCompletion.choices[0]?.message?.content;
@@ -68,7 +83,12 @@ Return STRICT JSON ONLY conforming exactly to this shape (do not include markdow
     }
 
     const parsed = JSON.parse(content);
-    return NextResponse.json({ answer: parsed.answer || 'I am sorry, I failed to process an answer.' });
+    
+    // Ensure the answer is always a string
+    const answer = parsed.answer;
+    const answerText = typeof answer === 'string' ? answer : JSON.stringify(answer, null, 2);
+    
+    return NextResponse.json({ answer: answerText || 'I am sorry, I failed to process an answer.' });
 
   } catch (error: any) {
     console.error('Chat API error:', error);

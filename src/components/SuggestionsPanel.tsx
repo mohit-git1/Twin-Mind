@@ -1,12 +1,14 @@
 'use client';
 
 import { useAppStore } from '@/store/useAppStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { RotateCw, Loader2 } from 'lucide-react';
 import { SuggestionCard } from './SuggestionCard';
 import { useState, useCallback, useEffect, useRef } from 'react';
 
 export function SuggestionsPanel() {
   const { transcript, suggestions, addSuggestionBatch, addChatMessage, isChatThinking, setIsChatThinking } = useAppStore();
+  const settings = useSettingsStore();
   const [isLoading, setIsLoading] = useState(false);
   const loadingRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -20,11 +22,22 @@ export function SuggestionsPanel() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript, full_prompt: item.full_prompt })
+        body: JSON.stringify({
+          transcript,
+          full_prompt: item.full_prompt,
+          settings: {
+            chatPrompt: settings.chatPrompt,
+            chatContextLines: settings.chatContextLines,
+            model: settings.model,
+            temperature: settings.temperature,
+            maxTokens: settings.maxTokens,
+          },
+        })
       });
       if (!res.ok) throw new Error('API failed');
       const data = await res.json();
-      addChatMessage({ id: Date.now().toString() + '-ai', sender: 'ai', text: data.answer });
+      const answerText = typeof data.answer === 'string' ? data.answer : JSON.stringify(data.answer, null, 2);
+      addChatMessage({ id: Date.now().toString() + '-ai', sender: 'ai', text: answerText });
     } catch (err) {
       console.error('Chat AI failed', err);
     } finally {
@@ -41,7 +54,17 @@ export function SuggestionsPanel() {
       const res = await fetch('/api/suggestions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript }),
+        body: JSON.stringify({
+          transcript,
+          settings: {
+            suggestionsPrompt: settings.suggestionsPrompt,
+            suggestionsContextLines: settings.suggestionsContextLines,
+            suggestionCount: settings.suggestionCount,
+            model: settings.model,
+            temperature: settings.temperature,
+            maxTokens: settings.maxTokens,
+          },
+        }),
       });
       if (!res.ok) throw new Error('API Error');
       const data = await res.json();
@@ -62,7 +85,7 @@ export function SuggestionsPanel() {
       loadingRef.current = false;
       setIsLoading(false);
     }
-  }, [transcript, addSuggestionBatch]);
+  }, [transcript, addSuggestionBatch, settings.suggestionsPrompt, settings.suggestionsContextLines, settings.suggestionCount, settings.model, settings.temperature, settings.maxTokens]);
 
   useEffect(() => {
     if (transcript.length > 0) fetchSuggestions();
@@ -85,7 +108,7 @@ export function SuggestionsPanel() {
           {isLoading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <RotateCw className="w-3 h-3 mr-2" />}
           Reload suggestions
         </button>
-        <span className="text-[10px] text-[#71717a]">auto-refresh in 25s</span>
+        <span className="text-[10px] text-[#71717a]">auto-refresh in {settings.autoRefreshInterval}s</span>
       </div>
 
       {/* Scrollable Area */}

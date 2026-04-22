@@ -49,7 +49,7 @@ export function ChatPanel() {
                </span>
                <div className="bg-[#161618] border border-[#3f3f46] rounded-md p-4">
                   <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
-                     {msg.text}
+                     {typeof msg.text === 'string' ? msg.text : JSON.stringify(msg.text, null, 2)}
                   </p>
                </div>
             </div>
