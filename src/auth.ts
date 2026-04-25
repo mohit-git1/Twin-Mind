@@ -1,11 +1,13 @@
-import NextAuth from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import NextAuth from 'next-auth'
+import Credentials from 'next-auth/providers/credentials'
+import bcrypt from 'bcryptjs'
+import dbConnect from '@/lib/mongodb'
+import User from '@/models/User'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
+  session: { strategy: 'jwt' },
+  pages: { signIn: '/signin' },
   providers: [
     Credentials({
       name: 'Credentials',
@@ -13,64 +15,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials, request) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null
 
-        // Rate limiting logic
-        const ip = request?.headers?.get('x-forwarded-for') || 'unknown';
-        const { checkRateLimit } = await import('@/lib/rateLimit');
-        const rateLimit = checkRateLimit(ip);
-
-        if (!rateLimit.allowed) {
-          throw new Error(`Too many login attempts. Please try again in ${rateLimit.retryAfter} seconds.`);
-        }
-
-        await dbConnect();
+        await dbConnect()
 
         const user = await User.findOne({
           email: (credentials.email as string).toLowerCase().trim(),
-        });
+        })
 
-        if (!user) {
-          return null;
-        }
+        if (!user) return null
 
         const isPasswordValid = await bcrypt.compare(
           credentials.password as string,
           user.password
-        );
+        )
 
-        if (!isPasswordValid) {
-          return null;
-        }
+        if (!isPasswordValid) return null
 
         return {
           id: user._id.toString(),
           email: user.email,
-        };
+        }
       },
     }),
   ],
-  session: {
-    strategy: 'jwt',
-  },
-  pages: {
-    signIn: '/signin',
-  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id
       }
-      return token;
+      return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = token.id as string
       }
-      return session;
+      return session
     },
   },
-});
+})
