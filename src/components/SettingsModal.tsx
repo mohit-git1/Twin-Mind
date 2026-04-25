@@ -4,7 +4,7 @@ import { useSettingsStore, DEFAULT_SUGGESTIONS_PROMPT, DEFAULT_CHAT_PROMPT } fro
 import { Settings, X, RotateCcw, Loader2, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-export function SettingsModal() {
+export function SettingsModal({ children, triggerClassName }: { children?: React.ReactNode, triggerClassName?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const settings = useSettingsStore();
   const { updateSettings, resetToDefaults } = settings;
@@ -146,14 +146,16 @@ export function SettingsModal() {
 
   return (
     <>
-      {/* Settings Trigger — Gear Icon Only */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="p-2 text-[#71717a] hover:text-slate-200 hover:bg-[#27272a] rounded-lg transition-all duration-200"
-        title="Settings"
-      >
-        <Settings className="w-5 h-5" />
-      </button>
+      <div onClick={() => setIsOpen(true)} className={triggerClassName || "cursor-pointer inline-block"}>
+        {children || (
+          <button
+            className="p-2 text-[#71717a] hover:text-slate-200 hover:bg-[#27272a] rounded-lg transition-all duration-200"
+            title="Settings"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+        )}
+      </div>
 
       {/* Modal Overlay */}
       {isOpen && (

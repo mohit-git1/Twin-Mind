@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export interface SuggestionItem {
   id: string;
-  type: 'question' | 'talking_point' | 'answer' | 'fact_check' | 'clarification';
+  type: 'action_item' | 'question' | 'talking_point' | 'answer' | 'fact_check' | 'clarification';
   preview: string;
   full_prompt: string;
 }

@@ -96,7 +96,7 @@ export async function PATCH(req: NextRequest) {
     const meeting = await MeetingSession.findOne({ _id: sessionId, userId: session.user.id });
     if (!meeting) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
 
-    const todo = meeting.todos.id(todoId);
+    const todo = meeting.todos.find((t: any) => t._id.toString() === todoId);
     if (!todo) return NextResponse.json({ error: 'Todo not found' }, { status: 404 });
 
     if (updates.completed !== undefined) todo.completed = updates.completed;

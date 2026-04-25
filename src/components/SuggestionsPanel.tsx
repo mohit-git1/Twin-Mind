@@ -29,7 +29,32 @@ export function SuggestionsPanel() {
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const suggestionRef = useRef<NodeJS.Timeout | null>(null);
 
+  const handleAddAction = async (item: any) => {
+    try {
+      const sessionId = useAppStore.getState().sessionId;
+      await fetch('/api/todos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: item.preview,
+          type: 'todo',
+          timing: 'today',
+          sessionId
+        }),
+      });
+      // Optionally show a tiny toast or just rely on the card's internal 'Added' state
+    } catch (err) {
+      console.error('Failed to add action item to To-Do list', err);
+    }
+  };
+
   const handleSuggestionClick = async (item: any) => {
+    if (item.type === 'action_item') {
+      // For action items, clicking the main card behaves like adding it, 
+      // but the user might also just want to chat about it.
+      // We'll proceed with chat behavior so they can discuss the task.
+    }
+
     if (isChatThinking || transcript.length === 0) return;
     setIsChatThinking(true);
     addChatMessage({ id: Date.now().toString(), sender: 'user', text: item.preview });
@@ -245,7 +270,7 @@ export function SuggestionsPanel() {
             <div key={batch.id} className="space-y-3">
               <div className="grid gap-3">
                 {batch.items.map((item) => (
-                  <SuggestionCard key={item.id} item={item} onClick={handleSuggestionClick} />
+                  <SuggestionCard key={item.id} item={item} onClick={handleSuggestionClick} onAddAction={handleAddAction} />
                 ))}
               </div>
               {index !== suggestions.length - 1 && (

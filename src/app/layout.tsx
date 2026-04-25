@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { NotificationBanner } from "@/components/NotificationBanner";
+import { TopNav } from "@/components/TopNav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,10 +31,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <body className="h-screen flex flex-col overflow-hidden" suppressHydrationWarning>
         <Providers>
+          <TopNav />
           <NotificationBanner />
-          {children}
+          <div className="flex flex-col flex-1 pt-14 min-h-0">
+            {children}
+          </div>
         </Providers>
       </body>
     </html>
