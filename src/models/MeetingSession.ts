@@ -15,9 +15,10 @@ export interface IChatMessage {
 export interface ITodo {
   _id?: mongoose.Types.ObjectId;
   text: string;
-  type: 'todo' | 'goal';
-  timing?: 'today' | 'later';
-  completed: boolean;
+  type: 'task' | 'goal';
+  timing: 'today' | 'later';
+  done: boolean;
+  completed?: boolean;
   createdAt: Date;
 }
 
@@ -47,8 +48,9 @@ const ChatMessageSchema = new Schema<IChatMessage>({
 
 const TodoSchema = new Schema<ITodo>({
   text: { type: String, required: true },
-  type: { type: String, enum: ['todo', 'goal'], default: 'todo' },
-  timing: { type: String, enum: ['today', 'later'] },
+  type: { type: String, enum: ['task', 'goal'], default: 'task' },
+  timing: { type: String, enum: ['today', 'later'], default: 'later' },
+  done: { type: Boolean, default: false },
   completed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });

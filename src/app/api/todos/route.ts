@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
     const allTodos = meetings.flatMap(m => 
       (m.todos || []).map((t: any) => ({
         ...t,
+        done: t.done ?? t.completed ?? false,
+        completed: t.completed ?? t.done ?? false,
         sessionId: m._id.toString()
       }))
     );
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { text, type = 'todo', timing = 'today', sessionId } = await req.json();
+    const { text, type = 'task', timing = 'today', sessionId } = await req.json();
 
     let targetSessionId = sessionId;
     if (!targetSessionId) {
@@ -65,8 +67,9 @@ export async function POST(req: NextRequest) {
     const newTodo = {
       _id: new mongoose.Types.ObjectId(),
       text,
-      type,
+      type: type === 'todo' ? 'task' : type, // handle legacy 'todo' type
       timing,
+      done: false,
       completed: false,
       createdAt: new Date()
     };
@@ -99,9 +102,17 @@ export async function PATCH(req: NextRequest) {
     const todo = meeting.todos.find((t: any) => t._id.toString() === todoId);
     if (!todo) return NextResponse.json({ error: 'Todo not found' }, { status: 404 });
 
-    if (updates.completed !== undefined) todo.completed = updates.completed;
+    if (updates.done !== undefined) {
+      todo.done = updates.done;
+      todo.completed = updates.done;
+    } else if (updates.completed !== undefined) {
+      todo.completed = updates.completed;
+      todo.done = updates.completed;
+    }
+    
     if (updates.timing !== undefined) todo.timing = updates.timing;
     if (updates.text !== undefined) todo.text = updates.text;
+    if (updates.type !== undefined) todo.type = updates.type;
 
     await meeting.save();
 

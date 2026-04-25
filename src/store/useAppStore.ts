@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { ActionItem } from '@/types/actions';
 
 export interface SuggestionItem {
   id: string;
@@ -38,6 +39,12 @@ interface AppState {
   isGeneratingSuggestions: boolean;
   suggestionTimerPaused: boolean;
 
+  // New fields for Task/Goal Detection
+  pendingActions: ActionItem[];
+  transcriptLineBuffer: number;
+  dismissAction: (id: string) => void;
+  clearAllPendingActions: () => void;
+
   setSessionId: (id: string | null) => void;
   setIsReadOnly: (readOnly: boolean) => void;
   setNotification: (notification: Notification | null) => void;
@@ -54,6 +61,29 @@ interface AppState {
   resetState: () => void;
 }
 
+// Background worker for detecting actions
+async function detectActionsFromTranscript(lines: string[]) {
+  try {
+    const res = await fetch("/api/detect-actions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recentLines: lines })
+    });
+    const data = await res.json();
+    if (data.actions?.length > 0) {
+      const actionsWithIds = data.actions.map((a: any) => ({
+        ...a,
+        id: Math.random().toString(36).substring(7) + Date.now()
+      }));
+      useAppStore.setState(state => ({
+        pendingActions: [...state.pendingActions, ...actionsWithIds]
+      }));
+    }
+  } catch {
+    // silent fail
+  }
+}
+
 export const useAppStore = create<AppState>((set, get) => ({
   transcript: [],
   suggestions: [],
@@ -68,6 +98,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   suggestionCountdown: 30,
   isGeneratingSuggestions: false,
   suggestionTimerPaused: true, // paused until first recording stops
+
+  // Task Detection defaults
+  pendingActions: [],
+  transcriptLineBuffer: 0,
+
+  dismissAction: (id) => set(state => ({
+    pendingActions: state.pendingActions.filter((a) => a.id !== id)
+  })),
+
+  clearAllPendingActions: () => set({ pendingActions: [] }),
 
   setSessionId: (id) => set({ sessionId: id }),
   setIsReadOnly: (readOnly) => set({ isReadOnly: readOnly }),
@@ -93,7 +133,22 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   addTranscriptLine: async (line) => {
-    set((state) => ({ transcript: [...state.transcript, line] }));
+    set((state) => {
+      const newBuffer = state.transcriptLineBuffer + 1;
+      const newState = { 
+        transcript: [...state.transcript, line],
+        transcriptLineBuffer: newBuffer
+      };
+
+      if (newBuffer >= 5) {
+        // We defer the execution of the detection to not block this reducer
+        const last5 = newState.transcript.slice(-5);
+        setTimeout(() => detectActionsFromTranscript(last5), 0);
+        newState.transcriptLineBuffer = 0;
+      }
+      return newState;
+    });
+
     const { sessionId } = get();
     if (sessionId) {
       try {
@@ -144,5 +199,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     suggestionCountdown: 30,
     isGeneratingSuggestions: false,
     suggestionTimerPaused: true,
+    pendingActions: [],
+    transcriptLineBuffer: 0,
   }),
 }));

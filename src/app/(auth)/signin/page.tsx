@@ -50,21 +50,21 @@ function SignInForm() {
     <div className="w-full max-w-md">
       {/* Brand */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-100 tracking-tight">
-          Twin<span className="text-[#60a5fa]">Mind</span>
+        <h1 className="text-3xl font-bold text-[#0f2e4a] tracking-tight">
+          Twin<span className="text-sky-600">Mind</span>
         </h1>
-        <p className="text-sm text-[#71717a] mt-2">
+        <p className="text-sm text-slate-500 mt-2 font-medium">
           Sign in to your account
         </p>
       </div>
 
       {/* Card */}
-      <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-8 shadow-2xl">
+      <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xl shadow-slate-200/50">
         {/* Error Display */}
         {displayError && (
-          <div className="flex items-center gap-2 mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <p className="text-sm text-red-400">{displayError}</p>
+          <div className="flex items-center gap-2 mb-6 p-3 bg-red-50 border border-red-100 rounded-xl">
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+            <p className="text-sm text-red-600 font-medium">{displayError}</p>
           </div>
         )}
 
@@ -73,12 +73,12 @@ function SignInForm() {
           <div>
             <label
               htmlFor="signin-email"
-              className="block text-xs font-medium text-[#a1a1aa] mb-1.5"
+              className="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2"
             >
-              Email
+              Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52525b]" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
               <input
                 id="signin-email"
                 type="email"
@@ -86,7 +86,7 @@ function SignInForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full bg-[#0f1115] text-slate-200 border border-[#3f3f46] rounded-lg pl-10 pr-4 py-2.5 text-sm placeholder:text-[#3f3f46] focus:outline-none focus:border-[#60a5fa] focus:ring-1 focus:ring-[#60a5fa]/30 transition-all"
+                className="w-full bg-slate-50 text-slate-800 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
               />
             </div>
           </div>
@@ -95,12 +95,12 @@ function SignInForm() {
           <div>
             <label
               htmlFor="signin-password"
-              className="block text-xs font-medium text-[#a1a1aa] mb-1.5"
+              className="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2"
             >
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52525b]" />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
               <input
                 id="signin-password"
                 type={showPassword ? "text" : "password"}
@@ -108,12 +108,12 @@ function SignInForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full bg-[#0f1115] text-slate-200 border border-[#3f3f46] rounded-lg pl-10 pr-10 py-2.5 text-sm placeholder:text-[#3f3f46] focus:outline-none focus:border-[#60a5fa] focus:ring-1 focus:ring-[#60a5fa]/30 transition-all"
+                className="w-full bg-slate-50 text-slate-800 border border-slate-200 rounded-xl pl-11 pr-11 py-3 text-sm placeholder:text-slate-400 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#52525b] hover:text-[#a1a1aa] transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -124,7 +124,7 @@ function SignInForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-semibold text-slate-900 bg-[#60a5fa] hover:bg-[#3b82f6] rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#60a5fa]/20"
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 text-sm font-bold text-white bg-[#0f2e4a] hover:bg-[#1a3f61] rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#0f2e4a]/10"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -136,13 +136,13 @@ function SignInForm() {
         </form>
 
         {/* Link to Sign Up */}
-        <p className="text-center text-sm text-[#71717a] mt-6">
+        <p className="text-center text-sm text-slate-500 mt-8">
           Don&apos;t have an account?{' '}
           <Link
             href="/signup"
-            className="text-[#60a5fa] hover:text-[#93c5fd] font-medium transition-colors"
+            className="text-sky-600 hover:text-sky-700 font-bold transition-colors"
           >
-            Sign up
+            Sign up for free
           </Link>
         </p>
       </div>

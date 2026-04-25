@@ -190,7 +190,7 @@ export default function DashboardPage() {
 
           <div className="space-y-3">
             {recentMeetings.length === 0 ? (
-              <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center justify-between">
+              <div key="empty-recent" className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100">
                     <Calendar className="w-5 h-5 text-slate-400" />
@@ -200,8 +200,8 @@ export default function DashboardPage() {
                 <ChevronDown className="w-4 h-4 text-slate-400 -rotate-90" />
               </div>
             ) : (
-              recentMeetings.map((session: any) => (
-                <div key={session._id} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col gap-1 cursor-pointer hover:border-slate-200 transition-colors" onClick={() => router.push('/library')}>
+              recentMeetings.map((session: any, idx: number) => (
+                <div key={session._id || `recent-${idx}`} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex flex-col gap-1 cursor-pointer hover:border-slate-200 transition-colors" onClick={() => router.push('/library')}>
                   <div className="flex justify-between items-start">
                     <h4 className="text-[15px] font-bold text-slate-800 truncate">{session.title || 'Untitled Meeting'}</h4>
                     <span className="text-[11px] text-slate-400 flex-none">{new Date(session.startedAt).toLocaleDateString()}</span>
