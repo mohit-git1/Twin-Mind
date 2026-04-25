@@ -34,17 +34,12 @@ function SignInForm() {
     setLoading(true);
 
     try {
-      const res = await signIn('credentials', {
+      await signIn('credentials', {
         email,
         password,
-        redirect: false,
+        redirect: true,
+        callbackUrl: '/',
       });
-
-      if (res?.ok) {
-        window.location.href = '/';
-      } else {
-        setError('Invalid email or password');
-      }
     } catch {
       setError('An unexpected error occurred');
     } finally {
