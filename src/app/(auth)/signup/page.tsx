@@ -48,11 +48,18 @@ export default function SignUpPage() {
       }
 
       // Step 2: Automatically sign in after successful signup
-      await signIn('credentials', {
+      const signInRes = await signIn('credentials', {
         email,
         password,
-        redirectTo: '/',
+        redirect: false,
       });
+
+      if (signInRes?.ok) {
+        window.location.href = '/';
+      } else {
+        setError('Login failed after signup. Please sign in manually.');
+        setLoading(false);
+      }
     } catch {
       setError('Something went wrong. Please try again.');
       setLoading(false);
