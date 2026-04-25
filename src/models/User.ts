@@ -1,10 +1,10 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface IUser extends Document {
-  email: string;
-  password: string;
-  groqApiKey?: string;
-  createdAt: Date;
+  email: string
+  password: string
+  groqApiKey?: string
+  createdAt: Date
 }
 
 const UserSchema = new Schema<IUser>({
@@ -27,10 +27,9 @@ const UserSchema = new Schema<IUser>({
     type: Date,
     default: Date.now,
   },
-});
+})
 
-// Prevent model recompilation on hot reload
 const User: Model<IUser> =
-  mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+  mongoose.models.User || mongoose.model<IUser>('User', UserSchema)
 
-export default User;
+export default User

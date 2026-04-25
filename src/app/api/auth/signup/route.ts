@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
     const rateLimit = checkRateLimit(ip);
-    
+
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: `Too many attempts. Please try again in ${rateLimit.retryAfter} seconds.` },
