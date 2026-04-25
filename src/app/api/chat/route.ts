@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cleanText } from '@/lib/cleanText';
 import { auth } from '@/auth';
 import { getGroqClient } from '@/lib/getGroqClient';
+import { CHAT_SYSTEM_PROMPT } from '@/lib/prompts';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,14 +25,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { transcript, full_prompt } = body;
+    const { transcript, full_prompt, chatHistory } = body;
     const settings = body.settings || {};
 
     // Use settings from client or defaults
     const contextLines = settings.chatContextLines || 15;
     const model = settings.model || 'llama-3.3-70b-versatile';
     const temperature = settings.temperature ?? 0.7;
-    const maxTokens = settings.maxTokens || 1024;
+    const maxTokens = settings.maxTokens || 512;
 
     if (!full_prompt) {
       return NextResponse.json(
@@ -50,43 +51,24 @@ export async function POST(req: NextRequest) {
 
     const conversationContext = recentLines.join('\n');
 
-    // Build prompt from settings or use default
-    let prompt: string;
-    if (settings.chatPrompt) {
-      prompt = settings.chatPrompt
-        .replace(/\{\{CONTEXT\}\}/g, conversationContext)
-        .replace(/\{\{FULL_PROMPT\}\}/g, full_prompt);
-    } else {
-      prompt = `You are a high-quality AI meeting assistant actively participating in an ongoing conversation.
-The user has clicked a specific suggestion prompt based on the live context.
+    // Build chat history string
+    const historyArray: { role: string; content: string }[] = chatHistory || [];
+    const chatHistoryStr = historyArray
+      .slice(-10)
+      .map((m: any) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+      .join('\n');
 
-System Goal: 
-Provide a detailed, helpful answer that significantly expands upon the suggestion preview.
-
-Live Context:
-${conversationContext}
-
-User Trigger Prompt:
-"${full_prompt}"
-
-Rules:
-- Be highly specific and insightful; avoid regurgitating generic corporate speak.
-- Add real examples, figures, or strategies if context permits.
-- Keep output highly structured (use clear bullet points if detailing a list or steps).
-- Stay deeply relevant to the live conversation context snippet.
-- DO NOT just repeat the transcript. Synthesize and predict helpful next steps.
-- Your tone must be natural, confident, and highly helpful.
-
-Return STRICT JSON ONLY conforming exactly to this shape (do not include markdown ticks formatting the response block):
-{
-  "answer": "<your detailed and structured output response>"
-}`;
-    }
+    // Build system prompt from centralized prompt file
+    const systemPrompt = CHAT_SYSTEM_PROMPT
+      .replace('{{TRANSCRIPT}}', conversationContext || '(no transcript yet)')
+      .replace('{{CHAT_HISTORY}}', chatHistoryStr || '(no prior messages)');
 
     const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: full_prompt },
+      ],
       model,
-      response_format: { type: 'json_object' },
       temperature,
       max_tokens: maxTokens,
     });
@@ -97,13 +79,7 @@ Return STRICT JSON ONLY conforming exactly to this shape (do not include markdow
       throw new Error('Groq returned empty chat content');
     }
 
-    const parsed = JSON.parse(content);
-    
-    // Ensure the answer is always a string
-    const answer = parsed.answer;
-    const answerText = typeof answer === 'string' ? answer : JSON.stringify(answer, null, 2);
-    
-    return NextResponse.json({ answer: answerText || 'I am sorry, I failed to process an answer.' });
+    return NextResponse.json({ answer: content.trim() });
 
   } catch (error: any) {
     console.error('Chat API error:', error);

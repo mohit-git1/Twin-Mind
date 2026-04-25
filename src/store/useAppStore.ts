@@ -31,10 +31,21 @@ interface AppState {
   sessionId: string | null;
   isReadOnly: boolean;
   notification: Notification | null;
+
+  // Recording & suggestion timer state
+  isRecording: boolean;
+  suggestionCountdown: number;
+  isGeneratingSuggestions: boolean;
+  suggestionTimerPaused: boolean;
+
   setSessionId: (id: string | null) => void;
   setIsReadOnly: (readOnly: boolean) => void;
   setNotification: (notification: Notification | null) => void;
   clearNotification: () => void;
+  setIsRecording: (isRecording: boolean) => void;
+  setSuggestionCountdown: (count: number) => void;
+  setIsGeneratingSuggestions: (val: boolean) => void;
+  setSuggestionTimerPaused: (val: boolean) => void;
   loadSession: (session: any) => void;
   addTranscriptLine: (line: string) => void;
   addSuggestionBatch: (batch: SuggestionBatch) => void;
@@ -52,10 +63,20 @@ export const useAppStore = create<AppState>((set, get) => ({
   isReadOnly: false,
   notification: null,
 
+  // Recording & suggestion timer defaults
+  isRecording: false,
+  suggestionCountdown: 30,
+  isGeneratingSuggestions: false,
+  suggestionTimerPaused: true, // paused until first recording stops
+
   setSessionId: (id) => set({ sessionId: id }),
   setIsReadOnly: (readOnly) => set({ isReadOnly: readOnly }),
   setNotification: (notification) => set({ notification }),
   clearNotification: () => set({ notification: null }),
+  setIsRecording: (isRecording) => set({ isRecording }),
+  setSuggestionCountdown: (count) => set({ suggestionCountdown: count }),
+  setIsGeneratingSuggestions: (val) => set({ isGeneratingSuggestions: val }),
+  setSuggestionTimerPaused: (val) => set({ suggestionTimerPaused: val }),
 
   loadSession: (session) => {
     set({
@@ -112,5 +133,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   setIsChatThinking: (isThinking) =>
     set({ isChatThinking: isThinking }),
 
-  resetState: () => set({ transcript: [], suggestions: [], chatMessages: [], isChatThinking: false, sessionId: null, isReadOnly: false }),
+  resetState: () => set({
+    transcript: [],
+    suggestions: [],
+    chatMessages: [],
+    isChatThinking: false,
+    sessionId: null,
+    isReadOnly: false,
+    isRecording: false,
+    suggestionCountdown: 30,
+    isGeneratingSuggestions: false,
+    suggestionTimerPaused: true,
+  }),
 }));

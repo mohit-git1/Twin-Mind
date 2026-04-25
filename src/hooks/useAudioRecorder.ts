@@ -3,11 +3,10 @@ import { useAppStore } from '@/store/useAppStore';
 import { cleanText } from '@/lib/cleanText';
 
 export function useAudioRecorder() {
-  const [isRecording, setIsRecording] = useState(false);
+  const { isRecording, setIsRecording, addTranscriptLine } = useAppStore();
   const [isTranscribing, setIsTranscribing] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const { addTranscriptLine } = useAppStore();
   
   // Guard to debounce overlapping chunks 
   const isUploadingRef = useRef(false);
@@ -89,7 +88,11 @@ export function useAudioRecorder() {
 
       // 30 sec chunks
       mediaRecorder.start(30000); 
+
+      // Update store — recording is active, pause suggestions
       setIsRecording(true);
+      useAppStore.getState().setSuggestionTimerPaused(true);
+      useAppStore.getState().setSuggestionCountdown(30);
       
     } catch (err) {
       console.error('Microphone permission or access error:', err);
@@ -101,7 +104,11 @@ export function useAudioRecorder() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+
+      // Update store — recording stopped, un-pause suggestions
       setIsRecording(false);
+      useAppStore.getState().setSuggestionTimerPaused(false);
+      useAppStore.getState().setSuggestionCountdown(30);
     }
   }, [isRecording]);
 

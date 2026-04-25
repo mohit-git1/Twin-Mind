@@ -12,12 +12,25 @@ export interface IChatMessage {
   timestamp: Date;
 }
 
+export interface ITodo {
+  _id?: mongoose.Types.ObjectId;
+  text: string;
+  type: 'todo' | 'goal';
+  timing?: 'today' | 'later';
+  completed: boolean;
+  createdAt: Date;
+}
+
 export interface IMeetingSession extends Document {
   userId: mongoose.Types.ObjectId;
+  title?: string;
+  summary?: string;
+  tags?: string[];
   startedAt: Date;
   endedAt?: Date;
   transcript: ITranscriptLine[];
   chatHistory: IChatMessage[];
+  todos: ITodo[];
 }
 
 const TranscriptLineSchema = new Schema<ITranscriptLine>({
@@ -32,12 +45,23 @@ const ChatMessageSchema = new Schema<IChatMessage>({
   timestamp: { type: Date, default: Date.now },
 }, { _id: false });
 
+const TodoSchema = new Schema<ITodo>({
+  text: { type: String, required: true },
+  type: { type: String, enum: ['todo', 'goal'], default: 'todo' },
+  timing: { type: String, enum: ['today', 'later'] },
+  completed: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+});
+
 const MeetingSessionSchema = new Schema<IMeetingSession>({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
+  title: String,
+  summary: String,
+  tags: [String],
   startedAt: {
     type: Date,
     default: Date.now,
@@ -47,6 +71,7 @@ const MeetingSessionSchema = new Schema<IMeetingSession>({
   },
   transcript: [TranscriptLineSchema],
   chatHistory: [ChatMessageSchema],
+  todos: [TodoSchema],
 });
 
 // Prevent model recompilation on hot reload
