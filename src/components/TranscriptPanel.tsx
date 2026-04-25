@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppStore } from '@/store/useAppStore';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Mic } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 
