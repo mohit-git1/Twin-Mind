@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 
 export function TranscriptPanel() {
-  const { transcript } = useAppStore();
+  const { transcript, isReadOnly } = useAppStore();
   const { isRecording, isTranscribing, startRecording, stopRecording } = useAudioRecorder();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -22,33 +22,41 @@ export function TranscriptPanel() {
       <div className="flex-none flex items-center justify-between px-5 py-4 border-b border-[#27272a]">
         <h2 className="text-sm font-semibold tracking-wide text-slate-200">Transcript</h2>
         <div className="flex items-center gap-3">
-          <span className={`text-xs font-medium tracking-wide ${isRecording ? 'text-red-400' : 'text-[#71717a]'}`}>
-            {isRecording ? '● REC' : 'IDLE'}
-          </span>
+          {isReadOnly ? (
+            <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 font-medium">
+              READ ONLY
+            </span>
+          ) : (
+            <span className={`text-xs font-medium tracking-wide ${isRecording ? 'text-red-400' : 'text-[#71717a]'}`}>
+              {isRecording ? '● REC' : 'IDLE'}
+            </span>
+          )}
         </div>
       </div>
 
       {/* Mic Control */}
-      <div className="flex-none px-5 py-3 flex items-center gap-4">
-        <button
-          onClick={isRecording ? stopRecording : startRecording}
-          title={isRecording ? "Stop Recording" : "Start Recording"}
-          className={`flex items-center justify-center w-11 h-11 rounded-full border transition-all duration-200 ${
-            isRecording
-              ? 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20'
-              : 'border-[#3f3f46] hover:bg-[#27272a]'
-          }`}
-        >
-          {isRecording ? (
-            <span className="w-3.5 h-3.5 bg-red-500 rounded-sm" />
-          ) : (
-            <span className="w-3.5 h-3.5 bg-[#60a5fa] rounded-full" />
-          )}
-        </button>
-        <span className="text-sm text-[#a1a1aa]">
-          {isRecording ? "Listening... speak to transcribe." : "Click to start recording."}
-        </span>
-      </div>
+      {!isReadOnly && (
+        <div className="flex-none px-5 py-3 flex items-center gap-4">
+          <button
+            onClick={isRecording ? stopRecording : startRecording}
+            title={isRecording ? "Stop Recording" : "Start Recording"}
+            className={`flex items-center justify-center w-11 h-11 rounded-full border transition-all duration-200 ${
+              isRecording
+                ? 'border-red-500/50 bg-red-500/10 hover:bg-red-500/20'
+                : 'border-[#3f3f46] hover:bg-[#27272a]'
+            }`}
+          >
+            {isRecording ? (
+              <span className="w-3.5 h-3.5 bg-red-500 rounded-sm" />
+            ) : (
+              <span className="w-3.5 h-3.5 bg-[#60a5fa] rounded-full" />
+            )}
+          </button>
+          <span className="text-sm text-[#a1a1aa]">
+            {isRecording ? "Listening... speak to transcribe." : "Click to start recording."}
+          </span>
+        </div>
+      )}
 
       {/* Transcript Scrollable Area */}
       <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3 custom-scrollbar">

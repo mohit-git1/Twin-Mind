@@ -4,7 +4,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useState, useRef, useEffect } from 'react';
 
 export function ChatPanel() {
-  const { chatMessages, addChatMessage, isChatThinking } = useAppStore();
+  const { chatMessages, addChatMessage, isChatThinking, isReadOnly } = useAppStore();
   const [inputValue, setInputValue] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -16,7 +16,7 @@ export function ChatPanel() {
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isReadOnly) return;
     
     addChatMessage({
       id: Date.now().toString(),
@@ -38,7 +38,9 @@ export function ChatPanel() {
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 custom-scrollbar">
         {chatMessages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-             <p className="text-[#52525b] italic text-base text-center">Select a suggestion or type a message...</p>
+             <p className="text-[#52525b] italic text-base text-center">
+               {isReadOnly ? "No chat history in this session." : "Select a suggestion or type a message..."}
+             </p>
           </div>
         ) : (
           chatMessages.map((msg) => (
@@ -83,13 +85,13 @@ export function ChatPanel() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            disabled={isChatThinking}
-            placeholder="Ask anything..."
+            disabled={isChatThinking || isReadOnly}
+            placeholder={isReadOnly ? "Read only session" : "Ask anything..."}
             className="flex-1 bg-[#161618] text-slate-200 border border-[#3f3f46] rounded-lg px-4 py-3 text-base focus:outline-none focus:border-[#60a5fa] transition-colors placeholder-[#52525b] disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={!inputValue.trim() || isChatThinking}
+            disabled={!inputValue.trim() || isChatThinking || isReadOnly}
             className="bg-[#60a5fa] hover:bg-[#3b82f6] text-slate-900 px-6 py-3 rounded-lg text-sm font-semibold transition-colors disabled:opacity-40 shadow-lg"
           >
             Send

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSettingsStore, DEFAULT_SUGGESTIONS_PROMPT, DEFAULT_CHAT_PROMPT } from '@/store/useSettingsStore';
-import { Settings, X, RotateCcw } from 'lucide-react';
+import { Settings, X, RotateCcw, Loader2, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export function SettingsModal() {
@@ -22,6 +22,14 @@ export function SettingsModal() {
     autoRefreshInterval: settings.autoRefreshInterval,
   });
 
+  // API Key State
+  const [hasKey, setHasKey] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [isKeyLoading, setIsKeyLoading] = useState(false);
+  const [keyFeedback, setKeyFeedback] = useState({ type: '', message: '' });
+
+  const [confirmRemoveKey, setConfirmRemoveKey] = useState(false);
+
   // Sync local state when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -36,6 +44,25 @@ export function SettingsModal() {
         suggestionCount: settings.suggestionCount,
         autoRefreshInterval: settings.autoRefreshInterval,
       });
+      
+      // Fetch API Key status
+      const checkKey = async () => {
+        try {
+          const res = await fetch('/api/user/apikey');
+          if (res.ok) {
+            const data = await res.json();
+            setHasKey(data.hasKey);
+          }
+        } catch (e) {
+          console.error('Failed to check API key status', e);
+        }
+      };
+      checkKey();
+    } else {
+      // Clear feedback when closing
+      setKeyFeedback({ type: '', message: '' });
+      setApiKeyInput('');
+      setConfirmRemoveKey(false);
     }
   }, [isOpen]);
 
@@ -61,6 +88,60 @@ export function SettingsModal() {
 
   const updateLocal = (key: string, value: any) => {
     setLocalSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveKey = async () => {
+    if (!apiKeyInput.startsWith('gsk_')) {
+      setKeyFeedback({ type: 'error', message: 'Key must start with gsk_' });
+      return;
+    }
+
+    setIsKeyLoading(true);
+    setKeyFeedback({ type: '', message: '' });
+
+    try {
+      const res = await fetch('/api/user/apikey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groqApiKey: apiKeyInput }),
+      });
+
+      if (res.ok) {
+        setHasKey(true);
+        setApiKeyInput('');
+        setKeyFeedback({ type: 'success', message: 'API key saved securely' });
+      } else {
+        const data = await res.json();
+        setKeyFeedback({ type: 'error', message: data.error || 'Failed to save key' });
+      }
+    } catch {
+      setKeyFeedback({ type: 'error', message: 'Network error' });
+    } finally {
+      setIsKeyLoading(false);
+    }
+  };
+
+  const handleRemoveKey = async () => {
+    setIsKeyLoading(true);
+    setKeyFeedback({ type: '', message: '' });
+
+    try {
+      const res = await fetch('/api/user/apikey', {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setHasKey(false);
+        setConfirmRemoveKey(false);
+        setKeyFeedback({ type: 'success', message: 'API key removed' });
+      } else {
+        setKeyFeedback({ type: 'error', message: 'Failed to remove key' });
+      }
+    } catch {
+      setKeyFeedback({ type: 'error', message: 'Network error' });
+    } finally {
+      setIsKeyLoading(false);
+    }
   };
 
   return (
@@ -111,6 +192,82 @@ export function SettingsModal() {
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 custom-scrollbar">
+
+              {/* API Key Section */}
+              <section className="p-4 bg-[#1e1e24] border border-[#3f3f46] rounded-xl">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-[12px] font-semibold text-slate-200 uppercase tracking-wide">
+                    Groq API Key
+                  </h3>
+                  {keyFeedback.message && (
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded ${
+                        keyFeedback.type === 'error'
+                          ? 'bg-red-500/20 text-red-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      }`}
+                    >
+                      {keyFeedback.message}
+                    </span>
+                  )}
+                </div>
+
+                {hasKey ? (
+                  <div className="flex items-center justify-between bg-[#161618] border border-emerald-500/30 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 text-emerald-400">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span className="text-xs font-medium">API Key is set</span>
+                    </div>
+                    {confirmRemoveKey ? (
+                      <div className="flex items-center gap-2 bg-[#27272a] rounded-lg px-2 py-1">
+                        <span className="text-[11px] text-slate-200 font-medium px-1">Sure?</span>
+                        <button
+                          onClick={handleRemoveKey}
+                          disabled={isKeyLoading}
+                          className="px-2 py-1 text-[11px] font-semibold text-red-400 hover:bg-red-400/10 rounded transition-colors disabled:opacity-50"
+                        >
+                          {isKeyLoading ? 'Removing...' : 'Yes'}
+                        </button>
+                        <button
+                          onClick={() => setConfirmRemoveKey(false)}
+                          disabled={isKeyLoading}
+                          className="px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-[#3f3f46] rounded transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmRemoveKey(true)}
+                        className="px-3 py-1.5 text-[11px] font-medium text-red-400 bg-red-400/10 hover:bg-red-400/20 rounded-md transition-colors"
+                      >
+                        Remove Key
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="password"
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                      placeholder="gsk_..."
+                      className="flex-1 bg-[#161618] text-slate-200 border border-[#3f3f46] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#60a5fa] transition-colors"
+                    />
+                    <button
+                      onClick={handleSaveKey}
+                      disabled={isKeyLoading || !apiKeyInput}
+                      className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-medium text-slate-900 bg-[#60a5fa] hover:bg-[#3b82f6] rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {isKeyLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                      Save Key
+                    </button>
+                  </div>
+                )}
+                <p className="text-[10px] text-[#71717a] mt-2">
+                  Your key is securely encrypted and never shown again. It is required to use the AI features.
+                </p>
+              </section>
 
               {/* Model & Parameters Section */}
               <section>

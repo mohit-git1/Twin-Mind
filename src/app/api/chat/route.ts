@@ -1,12 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Groq from 'groq-sdk';
 import { cleanText } from '@/lib/cleanText';
+import { auth } from '@/auth';
+import { getGroqClient } from '@/lib/getGroqClient';
 
 export async function POST(req: NextRequest) {
   try {
-    const groq = new Groq({
-      apiKey: process.env.GROQ_API_KEY || 'build_dummy',
-    });
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let groq;
+    try {
+      groq = await getGroqClient(session.user.id);
+    } catch (e: any) {
+      if (e.message === 'NO_API_KEY') {
+        return NextResponse.json(
+          { error: 'Please add your Groq API key in Settings' },
+          { status: 403 }
+        );
+      }
+      throw e;
+    }
 
     const body = await req.json();
     const { transcript, full_prompt } = body;

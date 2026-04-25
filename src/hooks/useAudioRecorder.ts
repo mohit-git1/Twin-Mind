@@ -30,6 +30,20 @@ export function useAudioRecorder() {
       });
 
       if (!response.ok) {
+        if (response.status === 403) {
+          const errorData = await response.json();
+          useAppStore.getState().setNotification({
+            type: 'error',
+            message: errorData.error || 'Please add your Groq API key in Settings'
+          });
+          // Stop recording so the user can fix the issue
+          if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+             mediaRecorderRef.current.stop();
+             mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+             setIsRecording(false);
+          }
+          return;
+        }
         throw new Error('Transcription API failed');
       }
 
@@ -53,6 +67,13 @@ export function useAudioRecorder() {
 
   const startRecording = useCallback(async () => {
     try {
+      // Create session first
+      const res = await fetch('/api/sessions', { method: 'POST' });
+      if (res.ok) {
+        const { sessionId } = await res.json();
+        useAppStore.getState().setSessionId(sessionId);
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
       const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
