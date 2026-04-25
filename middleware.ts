@@ -5,7 +5,7 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   // Use getToken which is Edge-compatible, avoids importing mongoose/bcrypt
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET });
   const isAuthenticated = !!token;
 
   // Public paths that don't require authentication
